@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding & Auth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. Базові налаштування --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        
+        body { 
+            background-color: #E5E5E5; 
+            display: flex; 
+            justify_content: center; 
+            align-items: center; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
+        /* --- 2. Рамка телефону --- */
+        .phone-frame {
+            width: 375px; 
+            height: 90vh; 
+            max-height: 812px; 
+            background-color: #FFFFFF; 
+            position: relative; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        /* ==========================
+           ЧАСТИНА 1: ONBOARDING
+           ========================== */
+        
+        .onboarding-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .slider-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+        .slider-container::-webkit-scrollbar { display: none; }
+
+        .slide {
+            min-width: 100%; 
+            height: 100%;
+            scroll-snap-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; 
+            padding-top: 60px;
+        }
+
+        .image-area {
+            width: 100%;
+            height: 40%; 
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; 
+            margin-bottom: 30px;
+        }
+
+        .image-area img {
+            max-width: 85%; 
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Кнопка-плашка MEET NEW PEOPLE */
+        .badge {
+            background-color: #FF5656; 
+            color: white; 
+            padding: 14px 22px;
+            font-size: 16px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(255, 86, 86, 0.3); 
+            margin-bottom: 25px; 
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .badge:hover { transform: scale(1.05); background-color: #ff4040; }
+        .badge:active { transform: scale(0.95); }
+
+        .text-content {
+            text-align: center; 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: #000;
+            line-height: 1.6; 
+            white-space: pre-line;
+            padding: 0 30px;
+        }
+
+        /* --- ПАНЕЛЬ КНОПОК --- */
+        .footer {
+            position: absolute;
+            bottom: 30px; 
+            left: 0;
+            width: 100%;
+            height: 60px;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            background-color: white; 
+        }
+
+        /* Кнопка SKIP */
+        .btn-skip {
+            background-color: #F4F5FC; 
+            color: #7A7A85; 
+            border: none; 
+            padding: 12px 24px;
+            font-size: 11px; 
+            font-weight: 800; 
+            letter-spacing: 1.5px; 
+            border-radius: 6px; 
+            cursor: pointer;
+        }
+
+        .dots { display: flex; gap: 8px; }
+        .dot { width: 10px; height: 10px; background-color: #F4F5FC; border-radius: 2px; transition: 0.3s; }
+        .dot.active { background-color: #FF5656; }
+
+        /* ОНОВЛЕНА Кнопка NEXT (Текст замість просто прямокутника) */
+        .btn-next {
+            background-color: #FF5656; 
+            color: white; /* Білий текст */
+            border: none;
+            padding: 12px 24px; /* Такі ж розміри, як у SKIP */
+            font-size: 11px; 
+            font-weight: 800; 
+            letter-spacing: 1.5px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(255, 86, 86, 0.25);
+        }
+
+        /* ==========================
+           ЧАСТИНА 2: AUTH SCREEN
+           ========================== */
+        
+        .auth-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #FF5656; 
+            z-index: 20;
+            display: none; 
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 30px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .auth-logo {
+            width: 100px; height: 100px; background-color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 20px; margin-top: 40px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .auth-logo img { width: 60%; height: auto; }
+
+        .app-title {
+            font-size: 32px; font-weight: 900; color: white; letter-spacing: 2px;
+            margin-bottom: 40px; text-transform: uppercase;
+        }
+
+        .auth-tabs { display: flex; gap: 15px; margin-bottom: 20px; width: 100%; }
+
+        .tab-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 8px;
+            font-weight: 800; font-size: 12px; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer; transition: 0.3s;
+        }
+        .tab-btn.active { background-color: white; color: #FF5656; }
+        .tab-btn.inactive { background-color: rgba(255,255,255,0.3); color: white; }
+
+        .input-group { width: 100%; display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        
+        .custom-input {
+            width: 100%; padding: 15px 20px; border-radius: 8px; border: none; outline: none;
+            font-size: 14px; font-weight: 600; color: #333; background-color: white; text-align: center;
+        }
+        .custom-input::placeholder { color: #aaa; text-transform: lowercase; }
+
+        .forgot-pass {
+            color: rgba(255,255,255,0.8); font-size: 10px; font-weight: 700;
+            align-self: flex-end; margin-bottom: 30px; text-decoration: none; text-transform: uppercase;
+        }
+
+        .btn-submit {
+            width: 100%; padding: 18px; background-color: white; color: #FF5656; border: none;
+            border-radius: 8px; font-size: 16px; font-weight: 900; letter-spacing: 1.5px;
+            text-transform: uppercase; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.15); margin-bottom: 20px;
+        }
+
+        .bottom-link { font-size: 10px; color: white; font-weight: 700; text-transform: uppercase; }
+        .bottom-link span { opacity: 0.7; }
+
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        
+        <div class="onboarding-wrapper" id="onboardingBlock">
+            <div class="slider-container" id="slider">
+                
+                <div class="slide">
+                    <div class="image-area"><img src="img1.png" alt="Slide 1"></div>
+                    <div class="badge" onclick="finishOnboarding()">MEET NEW PEOPLE</div>
+                    <div class="text-content">argefbjefffffffijijoookoefooef...</div>
+                </div>
+
+                <div class="slide">
+                    <div class="image-area"><img src="img2.png" alt="Slide 2"></div>
+                    <div class="badge" onclick="finishOnboarding()">MEET NEW PEOPLE</div>
+                    <div class="text-content">argefbjefffffffijijoookoefooef...</div>
+                </div>
+
+                <div class="slide">
+                    <div class="image-area"><img src="img3.png" alt="Slide 3"></div>
+                    <div class="badge" onclick="finishOnboarding()">MEET NEW PEOPLE</div>
+                    <div class="text-content">argefbjefffffffijijoookoefooef...</div>
+                </div>
+
+            </div>
+
+            <div class="footer">
+                <button class="btn-skip" onclick="finishOnboarding()">SKIP</button>
+                
+                <div class="dots">
+                    <div class="dot active" id="d0"></div>
+                    <div class="dot" id="d1"></div>
+                    <div class="dot" id="d2"></div>
+                </div>
+
+                <button class="btn-next" onclick="nextSlide()">NEXT</button>
+            </div>
+        </div>
+
+        <div class="auth-screen" id="authBlock">
+            <div class="auth-logo">
+                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077035.png" alt="Heart">
+            </div>
+            
+            <div class="app-title">FATED</div>
+
+            <div class="auth-tabs">
+                <button class="tab-btn inactive" id="tabLogin" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn active" id="tabRegister" onclick="switchTab('register')">Register</button>
+            </div>
+
+            <div class="input-group">
+                <input type="text" class="custom-input" placeholder="username">
+                <input type="password" class="custom-input" placeholder="password">
+                <input type="email" class="custom-input" id="emailField" placeholder="email">
+            </div>
+
+            <a href="#" class="forgot-pass">Forgot Password?</a>
+
+            <button class="btn-submit" id="mainBtn">REGISTER</button>
+
+            <div class="bottom-link" id="bottomText">
+                <span>Already have an account?</span> Login
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const slider = document.getElementById('slider');
+        const onboardingBlock = document.getElementById('onboardingBlock');
+        const authBlock = document.getElementById('authBlock');
+        const allDots = [document.getElementById('d0'), document.getElementById('d1'), document.getElementById('d2')];
+        
+        slider.addEventListener('scroll', () => {
+            const index = Math.round(slider.scrollLeft / slider.offsetWidth);
+            allDots.forEach(d => d.classList.remove('active'));
+            if(allDots[index]) allDots[index].classList.add('active');
+        });
+
+        function nextSlide() {
+            // Якщо це кінець слайдів - переходимо на авторизацію
+            if (slider.scrollLeft >= slider.offsetWidth * 2 - 10) {
+                finishOnboarding();
+            } else {
+                slider.scrollBy({ left: slider.offsetWidth, behavior: 'smooth' });
+            }
+        }
+
+        function finishOnboarding() {
+            onboardingBlock.style.opacity = '0';
+            setTimeout(() => {
+                onboardingBlock.style.display = 'none';
+                authBlock.style.display = 'flex';
+                setTimeout(() => { authBlock.style.opacity = '1'; }, 50);
+            }, 500);
+        }
+
+        function switchTab(mode) {
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegister = document.getElementById('tabRegister');
+            const emailField = document.getElementById('emailField');
+            const mainBtn = document.getElementById('mainBtn');
+            const bottomText = document.getElementById('bottomText');
+
+            if (mode === 'login') {
+                tabLogin.classList.add('active'); tabLogin.classList.remove('inactive');
+                tabRegister.classList.remove('active'); tabRegister.classList.add('inactive');
+                emailField.style.display = 'none';
+                mainBtn.innerText = "LOGIN";
+                bottomText.innerHTML = "<span>Don't have an account?</span> Register";
+            } else {
+                tabRegister.classList.add('active'); tabRegister.classList.remove('inactive');
+                tabLogin.classList.remove('active'); tabLogin.classList.add('inactive');
+                emailField.style.display = 'block';
+                mainBtn.innerText = "REGISTER";
+                bottomText.innerHTML = "<span>Already have an account?</span> Login";
+            }
+        }
+    </script>
+</body>
+</html>
